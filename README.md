@@ -25,17 +25,6 @@ flagdays_dk:
 State is the number of days to the event
 ![Screenshot](https://github.com/J-Lindvig/Flagdays_DK/blob/main/images/screenshot.png)
 ### Attributes
-date_str: 5. februar
-date: 5-2-2022
-flag_up_time: 08:42
-flag_down_time: 16:02
-timestamp: 1644046920
-days_to_event: 13
-event_name: Hendes Kongelige Højhed Kronprinsesse Marys fødselsdag
-half_mast: false
-half_mast_all_day: false
-flag: Dannebrog
-
 
 | Attribute name             | Example value                             | Description                        |
 |----------------------------|-------------------------------------------|------------------------------------|
