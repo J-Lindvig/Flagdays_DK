@@ -1,0 +1,6 @@
+{
+  "name": "Flagdays DK",
+  "country": ["DK"],
+  "render_readme": true,
+  "domains": ["sensor"]
+}
