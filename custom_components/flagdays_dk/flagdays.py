@@ -123,7 +123,7 @@ class flagdays_dk_api:
 		# If sunrise is before 08:00 use 08:00 else sunrise
 		flagTimes['flag_up_time'] = '08:00' if int(self._sun.get('sunrise').split(':')[0]) < 8 else self._sun.get('sunrise')
 		flagTimes['flag_down_time'] = self._sun.get('sunset')
-		
+
 		return flagTimes
 
 	def _getNumOfTag(self, html, tag, parser = 'html.parser'):
