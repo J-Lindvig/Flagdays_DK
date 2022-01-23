@@ -1,0 +1,10 @@
+{
+		"domain": "flagdays_dk",
+		"name": "FlagDays DK",
+		"documentation": "FlagDays in Denmark",
+		"dependencies": [],
+		"codeowners": ["J-Lindvig"],
+		"requirements": ["beautifulsoup4", "html.parser"],
+		"iot_class": "cloud_polling",
+		"version": "1.0"
+	}
