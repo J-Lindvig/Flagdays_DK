@@ -4,6 +4,11 @@
 
 Sensor with official flagdays in Denmark, with a option to add your own (birthdays etc.)
 
+## Credits
+Data is from ["Justitsministeriet"](https://www.justitsministeriet.dk/temaer/flagning/flagdage/).
+
+Sunrises and sunsets in the future is provided by [Sunrise-Sunset](https://sunrise-sunset.org/api) API.
+
 For installation instructions [see this guide](https://hacs.xyz/docs/faq/custom_repositories).
 ## Quick start
 Add the following to your configuration.yaml
