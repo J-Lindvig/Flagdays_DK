@@ -8,7 +8,6 @@ from .const import (
 	DOMAIN,
 	CONF_CLIENT,
 	CONF_PLATFORM,
-	ICON,
 	UPDATE_INTERVAL,
 )
 from homeassistant.const import ATTR_ATTRIBUTION

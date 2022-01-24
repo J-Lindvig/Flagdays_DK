@@ -7,6 +7,7 @@ import json                     # Needed to print JSON API data
 import datetime as DT
 
 from .const import (
+	DEFAULT_COORDINATES,
 	SUN_URL,
 	UTC_FORMAT,
 )
@@ -18,11 +19,11 @@ class SunFuture:
 		self._session = None
 		self._data = {}
 
-	def getFutureSun(self, lat = 55.395903819648304, lon = 10.388097722778282, dateStr = 'today'):
+	def getFutureSun(self, coordinates = DEFAULT_COORDINATES, dateStr = 'today'):
 		self._session = requests.Session()
 		payload = {
-			'lat': lat,
-			'lng': lon,
+			'lat': coordinates['lat'],
+			'lng': coordinates['lon'],
 			'date': dateStr,
 			'formatted': 0
 		}
