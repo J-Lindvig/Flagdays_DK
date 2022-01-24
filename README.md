@@ -5,7 +5,7 @@
 Sensor with official flagdays in Denmark, with a option to add your own (birthdays etc.)
 
 ## Credits
-Data is from ["Justitsministeriet"](https://www.justitsministeriet.dk/temaer/flagning/flagdage/).
+Data is from [Justitsministeriet](https://www.justitsministeriet.dk/temaer/flagning/flagdage/).
 
 Sunrises and sunsets in the future is provided by [Sunrise-Sunset](https://sunrise-sunset.org/api) API.
 
@@ -21,10 +21,12 @@ flagdays_dk:
     - pride
   events:
     # List of custom events
+    - name: Copenhagen Pride
+      date: 01-08-2004
     - name: Tim Berners Lee Birthday
-      date: '08-06-1955'
+      date: 08-06-1955
     - name: Ada Lovelace Birthday
-      date: '10-12-1815'
+      date: 10-12-1815
 ```
 ## State and attributes
 State is the number of days to the event
