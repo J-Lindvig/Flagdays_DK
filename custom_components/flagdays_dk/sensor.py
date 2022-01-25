@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 
 from .const import (
-	ATTRIBUTION,
 	CREDITS,
 	DOMAIN,
 	CONF_CLIENT,
@@ -52,7 +51,8 @@ class FlagDaysSensor(SensorEntity):
 	def __init__(self, hass, coordinator, flagDays) -> None:
 		self._hass = hass
 		self._coordinator = coordinator
-		self._name = 'Flagdays'
+		self._name = flagDays._next_event['event_name']
+		self._state = flagDays._next_event['days_to_event']
 		self._icon = 'mdi:flag'
 		self._next_event = flagDays._next_event
 		self._events = flagDays._events
@@ -63,20 +63,18 @@ class FlagDaysSensor(SensorEntity):
 
 	@property
 	def state(self):
-		return self._next_event['days_to_event']
+		return self._state
 
 	@property
 	def extra_state_attributes(self):
 		# Prepare a dictionary with a list of credits
-		attr = { ATTR_ATTRIBUTION: [ATTRIBUTION] }
-
-		for credit in CREDITS:
-			attr[ATTR_ATTRIBUTION].append(credit['organization'] + " (" + credit['site'] + ")")
-
-		for key in self._next_event:
-			attr[key] = self._next_event[key]
+		attr = {}
+		
+		attr.update(self._next_event)
 
 		attr['events'] = self._events
+
+		attr[ATTR_ATTRIBUTION] = CREDITS
 
 		return attr
 

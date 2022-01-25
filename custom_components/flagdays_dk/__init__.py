@@ -29,9 +29,10 @@ async def async_setup(hass, config):
 	# Get custom events and the flags in inventory from the config
 	events = config[DOMAIN].get('events', {})
 	flags = config[DOMAIN].get('flags', {})
+	offset = config[DOMAIN].get('offset', 0)
 
 	# Initialize the Client
-	client  = flagdays_dk_api(events, flags, coordinates)
+	client  = flagdays_dk_api(events, flags, coordinates, offset)
 	hass.data[DOMAIN] = {
 		CONF_CLIENT: client,
 	}

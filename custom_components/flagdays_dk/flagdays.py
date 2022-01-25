@@ -4,11 +4,12 @@ import logging
 import requests                     # Perform http/https requests
 from bs4 import BeautifulSoup as BS # Parse HTML pages
 import json                         # Needed to print JSON API data
-from datetime import datetime
+from datetime import datetime, timedelta
 from .sun_future import SunFuture
 
 from .const import (
 	DEFAULT_COORDINATES,
+	DEFAULT_FLAG,
 	DOMAIN,
 	EVENT_DATE_FORMAT,
 	FLAGDAY_URL,
@@ -23,12 +24,15 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 _LOGGER = logging.getLogger(__name__)
 
 class flagdays_dk_api:
-	def __init__(self, custom_events = None, flags = None, coordinates = DEFAULT_COORDINATES):
+	def __init__(self, custom_events = None, flags = None, coordinates = DEFAULT_COORDINATES, offset = 0):
 		self._custom_events = custom_events
 		self._flags = flags
 		self._sun = None
 		self._now = datetime.now()
 		self._coordinates = coordinates
+		if offset < 0:
+			offset = 0 - offset
+		self._offset = offset
 		self._session = None
 		self._year = None
 		self._next_event = {}
@@ -57,14 +61,34 @@ class flagdays_dk_api:
 				# Initialize a new flagday entry
 				flagDay = {}
 
+				# Extract the line with the event.
+				# Split special events by the "."
+				# In case of multiple "." only split the first
+				eventLine = cells[1].text.split('.', 1)
+
+				# Get the name of the event
+				flagDay['event_name'] = eventLine[0].strip()
+
 				# Get a "nice" date string, ex.  5. februar
 				flagDay['date_str'] = cells[0].text.strip()
 
 				# Extract date and month from the site
-				# Lookup the month and return the number og the month
+				# Lookup the month and return the number of the month
 				# Append the date, month and year
 				date, month = flagDay['date_str'].split('.')
-				flagDay['date'] = date + '-' + str(self._getMonthNo(month)) + '-' + self._year
+				flagDay['date'] = '-'.join([date, str(self._getMonthNo(month)), self._year])
+
+				# Find the flag if it is special
+				for flag in FLAGS:
+					# Is the flag a special flag
+					# and do we have it
+					# else it must be Dannebrog
+					if flag in eventLine[-1].lower():
+						add = flag in self._flags
+						flagDay['flag'] = FLAGS[flag]
+						break
+					else:
+						flagDay['flag'] = DEFAULT_FLAG
 
 				# Get the time of the sunrise and sunset and calculate the up and down time of the flag
 				# Append it to the dictionary
@@ -79,30 +103,10 @@ class flagdays_dk_api:
 				# Calculate days to the event
 				flagDay['days_to_event'] = (dateObj - self._now).days + 1
 
-				# Extract the line with the event.
-				# Split special events by the "."
-				# In case of multiple "." only split the first
-				eventLine = cells[1].text.split('.', 1)
-
-				# Get the name of the event
-				flagDay['event_name'] = eventLine[0].strip()
-
 				# Special event have special orders regarding the flag
 				flagDay['half_mast'] = flagDay['event_name'].lower() in HALF_MAST_DAYS
 				flagDay['half_mast_all_day'] = HALF_MAST_ALL_DAY_STR in eventLine[-1].lower()
 				flagDay['up_at_night'] = False
-
-				# Find the flag if it is special
-				for flag in FLAGS:
-					# Is the flag a special flag
-					# and do we have it
-					# else it must be Dannebrog
-					if flag in eventLine[-1].lower():
-						add = flag in self._flags
-						flagDay['flag'] = FLAGS[flag]
-						break
-					else:
-						flagDay['flag'] = 'Dannebrog'
 
 				if add:
 					self._events.append(flagDay)
@@ -125,7 +129,11 @@ class flagdays_dk_api:
 		# If sunrise is before 08:00 use 08:00 else sunrise
 		flagTimes['flag_up_time'] = '08:00' if int(self._sun.get('sunrise').split(':')[0]) < 8 else self._sun.get('sunrise')
 		flagTimes['flag_down_time'] = self._sun.get('sunset')
-
+		if self._offset > 0:
+			dateObj = datetime.strptime(flagTimes['flag_up_time'], '%H:%M')
+			flagTimes['flag_up_time_trigger'] =  ( dateObj - timedelta(minutes = self._offset)).strftime('%H:%M')
+			dateObj = datetime.strptime(flagTimes['flag_down_time'], '%H:%M')
+			flagTimes['flag_down_time_trigger'] =  ( dateObj - timedelta(minutes = self._offset)).strftime('%H:%M')
 		return flagTimes
 
 	def _getMonthName(self, monthNo):
@@ -138,36 +146,53 @@ class flagdays_dk_api:
 		else:
 			return 0
 
-	def _getDateObjectFromFlag(self, flagDay):
-		return datetime.strptime(flagDay['date'] + " " + flagDay['flag_up_time'], EVENT_DATE_FORMAT)
+	def _getDateObjectFromFlag(self, flagDay, time = None):
+		if not time:
+			time = flagDay['flag_up_time']
+		return datetime.strptime(flagDay['date'] + " " + time, EVENT_DATE_FORMAT)
 
 	def _getCustomEvent(self, event):
 		flagDay = {}
 
+		# Extract the name of the event
+		flagDay['event_name'] = event['name']
 		# Split the given string into date, month and year
 		date, month, year = event['date'].split('-')
 		# Create a nice date string
 		flagDay['date_str'] = f'{ date }. { self._getMonthName(month) }'
+		# Create a date
+		flagDay['date'] = '-'.join([date, month.strip("0"), self._year])
+		flagDay['flag'] = DEFAULT_FLAG if not 'pride' in event['name'].lower() else FLAGS['pride']
+
+		if 'flag' in event:
+			flagDay['flag'] = event['flag']
+		else:
+			# Find the flag if it is special
+			for flag in FLAGS:
+				# Is the flag a special flag
+				# and do we have it
+				# else it must be Dannebrog
+				if flag in event['name'].lower():
+					flagDay['flag'] = FLAGS[flag]
+					break
+				else:
+					flagDay['flag'] = DEFAULT_FLAG
+
 		# Add the times for up and down
 		flagDay.update(self._getFlagTimes(self._year + "-" + month + "-" + date))
-		# Create a date
-		flagDay['date'] = str(int(date)) + '-' + str(int(month)) + '-' + self._year
 
 		# Create a Date object from the event
-		#dateObj = datetime.strptime(flagDay['date'] + " " + flagDay['flag_up_time'], EVENT_DATE_FORMAT)
 		dateObj = self._getDateObjectFromFlag(flagDay)
 		# Calculate the timestamp
 		flagDay['timestamp'] = int(dateObj.timestamp())
 		# Calculate the days to the event
 		flagDay['days_to event'] = (dateObj - self._now).days + 1
 
-		# Extract the name of the event
-		flagDay['event_name'] = event['name']
+
 		flagDay['half_mast'] = False
 		flagDay['half_mast_all_day'] = False
 		flagDay['up_at_night'] = False
-		flagDay['flag'] = 'Dannebrog' if not 'pride' in event['name'].lower() else FLAGS['pride']
-		flagDay['up_at_night'] = flagDay['flag'] != 'Dannebrog'
+		flagDay['up_at_night'] = flagDay['flag'] != DEFAULT_FLAG
 
 		return flagDay
 

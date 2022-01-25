@@ -1,10 +1,10 @@
-ATTRIBUTION = 'Created by J-Lindvig'
 CONF_CLIENT = 'client'
 CONF_PLATFORM = 'sensor'
 DEFAULT_COORDINATES = {
 	'lat' : 55.395903819648304,
 	'lon' : 10.388097722778282
 }
+DEFAULT_FLAG = 'Dannebrog'
 DOMAIN = 'flagdays_dk'
 EVENT_DATE_FORMAT = '%d-%m-%Y %H:%M'
 FLAGS = {
@@ -22,4 +22,8 @@ SUN_URL = 'https://api.sunrise-sunset.org/json'
 UPDATE_INTERVAL = 60
 UTC_FORMAT = '%Y-%m-%dT%H:%M:%S%z'
 
-CREDITS = [{'organization': 'Justitsministeriet', 'site': FLAGDAY_URL}, {'organization': 'Sunrise-Sunset', 'site': 'https://sunrise-sunset.org/api'}]
+CREDITS = [
+	{ 'Created by': 'J-Lindvig (https://github.com/J-Lindvig' },
+	{ 'Data provided by': 'Justitsministeriet (' + FLAGDAY_URL + ')' },
+	{ 'Sunrise/sunset provided by': 'Sunrise-Sunset (https://sunrise-sunset.org/api)' }
+]
