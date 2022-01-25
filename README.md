@@ -14,13 +14,26 @@ For installation instructions [see this guide](https://hacs.xyz/docs/faq/custom_
 Add the following to your configuration.yaml
 ```yaml
 flagdays_dk:
+  # Optional entries
+  
+  # Create attributes with specified offset in minutes
+  # These are to be used as triggers in automatiions
+  offset: 10
+  
+  # List of flags that we own and wish to use
   flags:
-    # Flags we own and want to use
     - grønland
     - færø
     - pride
+    - Jolly Roger
+
+  # List of custom events
+  # Required: name and date
+  # Optional: flag
   events:
-    # List of custom events
+    - name: Jolly Roger Memorial Day
+      date: 01-01-2022
+      flag: Jolly Roger
     - name: Copenhagen Pride
       date: 01-08-2004
     - name: Tim Berners Lee Birthday
@@ -35,14 +48,17 @@ State is the number of days to the event
 
 | Attribute name             | Example value                             | Description                        |
 |----------------------------|-------------------------------------------|------------------------------------|
-| attribution                | Created by J-Lindvig                      | Name of the creator                |
+| event_name                 | Hendes Kongelige Højhed Kronprinsesse...  | Name of the event                  |
 | date_str                   | 5. februar                                | Nice TTS date of the event         |
 | date                       | 5-2-2022                                  | Date of the event                  |
+| flag                       | Dannebrog                                 | Name of flag to use                |
 | flag_up_time               | 08:42                                     | Time to hoist the flag             |
-| flag_down_time             | 16:02                                     | Time to pulle the flag             |
+| flag_down_time             | 16:02                                     | Time to pull the flag              |
+| flag_up_time_trigger       | 08:32                                     | Trigger to use for flag up         |
+| flag_down_time_trigger     | 15:22                                     | Trigger to use for flag down       |
 | timestamp                  | 1644046920                                | Timestamp of the event             |
 | days_to_event              | 13                                        | Days to the event                  |
-| event_name                 | Hendes Kongelige Højhed Kronprinsesse...  | Name of the event                  |
 | half_mast                  | false                                     | Flag at half mast?                 |
-| half_mast_all_day          | false                                     | Falg at half mast all day?         |
-| flag                       | Dannebrog                                 | Name of flag to use                |
+| half_mast_all_day          | false                                     | Flag at half mast all day?         |
+| up_at_night                | false                                     | Flag allowed to be up at night?    |
+| attribution                | Created by J-Lindvig                      | Name of the creator                |
