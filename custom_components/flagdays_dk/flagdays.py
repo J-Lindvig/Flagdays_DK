@@ -24,7 +24,7 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 _LOGGER = logging.getLogger(__name__)
 
 class flagdays_dk_api:
-	def __init__(self, custom_events = None, flags = None, coordinates = DEFAULT_COORDINATES, offset = 0):
+	def __init__(self, coordinates = DEFAULT_COORDINATES, offset = 0, custom_events = None, flags = None):
 		self._custom_events = custom_events
 		self._flags = flags
 		self._sun = None
@@ -37,8 +37,6 @@ class flagdays_dk_api:
 		self._year = None
 		self._next_event = {}
 		self._events = []
-
-		_LOGGER.debug("[flags] : " + str(self._flags))
 
 	def getFlagdays(self):
 		self._now = datetime.now()

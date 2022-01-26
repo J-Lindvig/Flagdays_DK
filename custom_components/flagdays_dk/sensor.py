@@ -51,7 +51,7 @@ class FlagDaysSensor(SensorEntity):
 	def __init__(self, hass, coordinator, flagDays) -> None:
 		self._hass = hass
 		self._coordinator = coordinator
-		self._name = flagDays._next_event['event_name']
+		self._name = 'flagdays'
 		self._state = flagDays._next_event['days_to_event']
 		self._icon = 'mdi:flag'
 		self._next_event = flagDays._next_event

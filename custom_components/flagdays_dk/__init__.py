@@ -32,7 +32,7 @@ async def async_setup(hass, config):
 	offset = config[DOMAIN].get('offset', 0)
 
 	# Initialize the Client
-	client  = flagdays_dk_api(events, flags, coordinates, offset)
+	client  = flagdays_dk_api(coordinates, offset, events, flags)
 	hass.data[DOMAIN] = {
 		CONF_CLIENT: client,
 	}
