@@ -41,6 +41,7 @@ class flagdays_dk_api:
 		_LOGGER.debug("[flags] : " + str(self._flags))
 
 	def getFlagdays(self):
+		self._now = datetime.now()
 		# It the events are empty, fetch data from the site
 		if not self._events:
 			self._session = requests.Session()
@@ -114,9 +115,15 @@ class flagdays_dk_api:
 			# Loop through the given events from the configuration.yaml
 			for event in self._custom_events:
 				self._events.append(self._getCustomEvent(event))
-	
+
 			# Sort the events
-			self._events = sorted(self._events, key=lambda d: d['timestamp']) 
+			self._events = sorted(self._events, key=lambda d: d['timestamp'])
+		else:
+			for i in range(len(self._events)):
+				# Create a Date object from the date of the event
+				dateObj = self._getDateObjectFromFlag(self._events[i])
+				# Calculate days to the event
+				self._events[i]['days_to_event'] = (dateObj - self._now).days + 1
 
 		# Find the firstcoming event
 		self._next_event = self._getNextEvent()

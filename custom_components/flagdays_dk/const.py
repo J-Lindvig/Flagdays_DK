@@ -23,7 +23,7 @@ UPDATE_INTERVAL = 60
 UTC_FORMAT = '%Y-%m-%dT%H:%M:%S%z'
 
 CREDITS = [
-	{ 'Created by': 'J-Lindvig (https://github.com/J-Lindvig' },
+	{ 'Created by': 'J-Lindvig (https://github.com/J-Lindvig)' },
 	{ 'Data provided by': 'Justitsministeriet (' + FLAGDAY_URL + ')' },
 	{ 'Sunrise/sunset provided by': 'Sunrise-Sunset (https://sunrise-sunset.org/api)' }
 ]
