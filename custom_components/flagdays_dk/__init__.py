@@ -25,11 +25,15 @@ async def async_setup(hass, config):
 	coordinates = {}
 	coordinates['lat'] = config.get(CONF_LATITUDE, hass.config.latitude)
 	coordinates['lon'] = config.get(CONF_LONGITUDE, hass.config.longitude)
+	_LOGGER.debug("Coordinates loaded from Home Assistant: " + str(len(coordinates)))
 
 	# Get custom events and the flags in inventory from the config
 	events = config[DOMAIN].get('events', {})
+	_LOGGER.debug("Events loaded from config: " + str(len(events)))
 	flags = config[DOMAIN].get('flags', {})
+	_LOGGER.debug("Flags loaded from config: " + str(len(flags)))
 	offset = config[DOMAIN].get('offset', 0)
+	_LOGGER.debug("Offset set to: " + str(offset) + " from config")
 
 	# Initialize the Client
 	client  = flagdays_dk_api(coordinates, offset, events, flags)

@@ -28,7 +28,7 @@ class flagdays_dk_api:
 		self._custom_events = custom_events
 		self._flags = flags
 		self._sun = None
-		self._now = datetime.now()
+		self._now = None
 		self._coordinates = coordinates
 		if offset < 0:
 			offset = 0 - offset
@@ -42,6 +42,7 @@ class flagdays_dk_api:
 		self._now = datetime.now()
 		# It the events are empty, fetch data from the site
 		if not self._events:
+			_LOGGER.debug("getFlagdays, Events empty, start scraping")
 			self._session = requests.Session()
 			self._sun = SunFuture()
 			r = self._session.get(FLAGDAY_URL, headers = HEADERS)
@@ -110,13 +111,17 @@ class flagdays_dk_api:
 				if add:
 					self._events.append(flagDay)
 
+			_LOGGER.debug("getFlagdays, added " + str(len(self._events)) + " official events")
 			# Loop through the given events from the configuration.yaml
 			for event in self._custom_events:
 				self._events.append(self._getCustomEvent(event))
+			_LOGGER.debug("getFlagdays, added " + str(len(self._custom_events)) + " custom events")
 
 			# Sort the events
 			self._events = sorted(self._events, key=lambda d: d['timestamp'])
+			_LOGGER.debug("getFlagdays, sorted a total of " + str(len(self._events)) + " events")
 		else:
+			_LOGGER.debug("getFlagdays, Events has " + str(len(self._events)) + " elements, updating dates")
 			for i in range(len(self._events)):
 				# Create a Date object from the date of the event
 				dateObj = self._getDateObjectFromFlag(self._events[i])
@@ -124,6 +129,7 @@ class flagdays_dk_api:
 				self._events[i]['days_to_event'] = (dateObj - self._now).days + 1
 
 		# Find the firstcoming event
+		_LOGGER.debug("getFlagdays, finding the firstcoming event")
 		self._next_event = self._getNextEvent()
 
 	def _getFlagTimes(self, dateStr):
