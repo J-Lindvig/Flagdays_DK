@@ -71,6 +71,8 @@ class FlagDaysSensor(SensorEntity):
 		attr = {}
 		
 		attr.update(self._next_event)
+		# Force a update on state
+		self._state = self._next_event['days_to_event']
 
 		attr['events'] = self._events
 
