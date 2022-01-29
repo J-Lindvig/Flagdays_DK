@@ -1,4 +1,4 @@
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/J-Lindvig/Flagdays_DK?style=for-the-badge)
 ![GitHub all releases](https://img.shields.io/github/downloads/J-Lindvig/Flagdays_DK/total?style=for-the-badge)
 ![GitHub last commit](https://img.shields.io/github/last-commit/J-Lindvig/Flagdays_DK?style=for-the-badge)
