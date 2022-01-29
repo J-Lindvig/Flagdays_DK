@@ -172,7 +172,7 @@ class flagdays_dk_api:
 		# Create a nice date string
 		flagDay['date_str'] = f'{ date }. { self._getMonthName(month) }'
 		# Create a date
-		flagDay['date'] = '-'.join([date, month.strip("0"), self._year])
+		flagDay['date'] = '-'.join([date, month.lstrip("0"), self._year])
 		flagDay['flag'] = DEFAULT_FLAG if not 'pride' in event['name'].lower() else FLAGS['pride']
 
 		if 'flag' in event:
