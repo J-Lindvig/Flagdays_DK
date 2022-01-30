@@ -4,6 +4,10 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/J-Lindvig/Flagdays_DK)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/J-Lindvig/Flagdays_DK)
 
+[![Buy me a coffee](https://img.shields.io/static/v1.svg?label=Buy%20me%20a%20coffee&message=🥨&color=black&logo=buy%20me%20a%20coffee&logoColor=white&labelColor=6f4e37)](https://www.buymeacoffee.com/apptoo)
+
+
+https://www.buymeacoffee.com/apptoo
 # Flagdays_DK
 
 Sensor with official flagdays in Denmark, with a option to add your own (birthdays etc.)
