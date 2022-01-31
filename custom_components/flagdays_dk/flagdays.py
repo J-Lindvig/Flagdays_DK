@@ -5,6 +5,7 @@ import requests                     # Perform http/https requests
 from bs4 import BeautifulSoup as BS # Parse HTML pages
 import json                         # Needed to print JSON API data
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 from .sun_future import SunFuture
 
 from .const import (
@@ -92,7 +93,7 @@ class flagdays_dk_api:
 
 				# Get the time of the sunrise and sunset and calculate the up and down time of the flag
 				# Append it to the dictionary
-				flagDay.update(self._getFlagTimes(self._year + "-" + str(self._getMonthNo(month)) + "-" + date))
+				flagDay.update(self._getFlagTimes('-'.join([self._year, str(self._getMonthNo(month)), date])))
 
 				# Create a Date object from the date of the event
 				dateObj = self._getDateObjectFromFlag(flagDay)
@@ -190,19 +191,24 @@ class flagdays_dk_api:
 					flagDay['flag'] = DEFAULT_FLAG
 
 		# Add the times for up and down
-		flagDay.update(self._getFlagTimes(self._year + "-" + month + "-" + date))
+		flagDay.update(self._getFlagTimes('-'.join([self._year, month, date])))
 
-		# Create a Date object from the event
+		# Create a Date object from the event in this year
 		dateObj = self._getDateObjectFromFlag(flagDay)
 		# Calculate the timestamp
 		flagDay['timestamp'] = int(dateObj.timestamp())
 		# Calculate the days to the event
 		flagDay['days_to event'] = (dateObj - self._now).days + 1
 
+		# If the 'calculate_years' is not set or set to false,
+		# calculate the years passed-
+		if not 'calculate_years' in event.keys() or event['calculate_years']:
+			dateObj = datetime.strptime(event['date'], '%d-%m-%Y')
+			relativeDate = relativedelta(self._now, dateObj)
+			flagDay['years_to_celebrate'] = relativeDate.years + 1
 
 		flagDay['half_mast'] = False
 		flagDay['half_mast_all_day'] = False
-		flagDay['up_at_night'] = False
 		flagDay['up_at_night'] = flagDay['flag'] != DEFAULT_FLAG
 
 		return flagDay
