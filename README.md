@@ -63,6 +63,7 @@ State is the number of days to the event
 | flag_down_time_trigger     | 15:22                                     | Trigger to use for flag down       |
 | timestamp                  | 1644046920                                | Timestamp of the event             |
 | days_to_event              | 13                                        | Days to the event                  |
+| years_to_celebrate         | 5                                         | Years passed on a custom event     |
 | half_mast                  | false                                     | Flag at half mast?                 |
 | half_mast_all_day          | false                                     | Flag at half mast all day?         |
 | up_at_night                | false                                     | Flag allowed to be up at night?    |
