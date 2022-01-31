@@ -41,6 +41,7 @@ flagdays_dk:
       flag: Jolly Roger
     - name: Copenhagen Pride
       date: 01-08-2004
+      calculate_years: false
     - name: Tim Berners Lee Birthday
       date: 08-06-1955
     - name: Ada Lovelace Birthday
