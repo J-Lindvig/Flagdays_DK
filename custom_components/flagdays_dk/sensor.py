@@ -52,7 +52,8 @@ class FlagDaysSensor(SensorEntity):
 		self._hass = hass
 		self._coordinator = coordinator
 		self._name = 'flagdays'
-		self._state = flagDays._next_event['days_to_event']
+#		self._state = flagDays._next_event['days_to_event']
+		self._state = flagDays._state
 		self._icon = 'mdi:flag'
 		self._next_event = flagDays._next_event
 		self._events = flagDays._events
@@ -72,7 +73,7 @@ class FlagDaysSensor(SensorEntity):
 		
 		attr.update(self._next_event)
 		# Force a update on state
-		self._state = self._next_event['days_to_event']
+#		self._state = self._next_event['days_to_event']
 
 		attr['events'] = self._events
 

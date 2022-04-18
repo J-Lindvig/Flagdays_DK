@@ -36,6 +36,7 @@ class flagdays_dk_api:
 		self._offset = offset
 		self._session = None
 		self._year = None
+		self._state = 0
 		self._next_event = {}
 		self._events = []
 
@@ -103,6 +104,7 @@ class flagdays_dk_api:
 
 				# Calculate days to the event
 				flagDay['days_to_event'] = (dateObj - self._now).days + 1
+				_LOGGER.debug("days_to_event: " + str(flagDay['days_to_event']))
 
 				# Special event have special orders regarding the flag
 				flagDay['half_mast'] = flagDay['event_name'].lower() in HALF_MAST_DAYS
@@ -132,6 +134,8 @@ class flagdays_dk_api:
 		# Find the firstcoming event
 		_LOGGER.debug("getFlagdays, finding the firstcoming event")
 		self._next_event = self._getNextEvent()
+
+		_LOGGER.debug("State: " + str(self._state))
 
 	def _getFlagTimes(self, dateStr):
 		flagTimes = {}
@@ -218,4 +222,6 @@ class flagdays_dk_api:
 		now_ts = int(self._now.timestamp())
 		for event in self._events:
 			if event['timestamp'] > now_ts:
+				_LOGGER.debug("Keys: " + str(event.keys()))
+				self._state = event['days_to event']
 				return event
