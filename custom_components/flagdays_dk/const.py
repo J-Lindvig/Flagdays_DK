@@ -18,7 +18,7 @@ HEADERS = {'User-Agent': 'Mozilla/5.0 (Platform; Security; OS-or-CPU; Localizati
 HALF_MAST_DAYS = ['besættelsesdagen', 'langfredag']
 HALF_MAST_ALL_DAY_STR = 'hele dagen'
 MONTHS_DK = ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'december']
-SUN_URL = 'https://api.sunrise-sunset.org/json'
+SUN_URL = 'http://api.sunrise-sunset.org/json'
 UPDATE_INTERVAL = 60
 UTC_FORMAT = '%Y-%m-%dT%H:%M:%S%z'
 
