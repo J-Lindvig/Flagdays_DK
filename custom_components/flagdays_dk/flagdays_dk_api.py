@@ -84,7 +84,7 @@ class flagDays_DK:
                 name = (
                     aFlagDay.getName()
                     + " ("
-                    + str(relativedelta(d2, d1).years + 1)
+                    + str(relativedelta(d2, d1).years)
                     + " år)"
                 )
                 aFlagDay.setName(name)
