@@ -1,47 +1,46 @@
 from __future__ import annotations
 
 import logging
-import requests                 # Perform http/https requests
-from bs4 import BeautifulSoup   # Parse HTML pages
-import json                     # Needed to print JSON API data
-import datetime as DT
+import requests
+
+from datetime import datetime
+from dateutil import tz
 
 from .const import (
-	DEFAULT_COORDINATES,
-	SUN_URL,
-	UTC_FORMAT,
+    DEFAULT_COORDINATES,
 )
 
+SUN_URL = "http://api.sunrise-sunset.org/json"
+UTC_FORMAT = "%Y-%m-%dT%H:%M:%S%z"
+
+_LOGGER: logging.Logger = logging.getLogger(__package__)
 _LOGGER = logging.getLogger(__name__)
 
+
 class SunFuture:
-	def __init__(self):
-		self._session = None
-		self._data = {}
+    def __init__(self, dateStr="today", coordinates=DEFAULT_COORDINATES):
+        self._sunData = {"sunrise": None, "sunset": None}
+        self._session = requests.Session()
+        payload = {
+            "lat": coordinates["lat"],
+            "lng": coordinates["lon"],
+            "date": dateStr,
+            "formatted": 0,
+        }
+        r = self._session.get(SUN_URL, params=payload)
 
-	def getFutureSun(self, coordinates = DEFAULT_COORDINATES, dateStr = 'today'):
-		self._session = requests.Session()
-		payload = {
-			'lat': coordinates['lat'],
-			'lng': coordinates['lon'],
-			'date': dateStr,
-			'formatted': 0
-		}
-		r = self._session.get(SUN_URL, params = payload)
+        if r.status_code == 200:
+            r = r.json()
+            if r["status"].lower() == "ok":
+                for key in self._sunData.keys():
+                    self._sunData[key] = self._getLocalDatetime(r["results"][key])
 
-		if r.status_code == 200:
-			r = r.json()
-			if r['status'].lower() == 'ok':
-				for key in r['results']:
-					value = r['results'][key]
-					if key.lower() != 'day_length':
-						value = self._getLocalDatetime(value)
-					self._data[key] = value
-			self._data['date'] = self._getLocalDatetime(r['results']['sunrise'], '%d-%m-%Y')
+    def getSunDatetimes(self):
+        return self._sunData
 
-	def get(self, key):
-		return self._data[key]
-
-	def _getLocalDatetime(self, dateStr, dateFormat = '%H:%M'):
-		ts = DT.datetime.strptime(dateStr, UTC_FORMAT).timestamp()
-		return DT.datetime.strftime(DT.datetime.fromtimestamp(ts), dateFormat)
+    def _getLocalDatetime(self, dateStr):
+        return (
+            datetime.strptime(dateStr, UTC_FORMAT)
+            .replace(tzinfo=tz.gettz("UTC"))
+            .astimezone(tz.gettz("Europe/Copenhagen"))
+        )

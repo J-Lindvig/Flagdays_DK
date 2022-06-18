@@ -2,49 +2,57 @@ from __future__ import annotations
 
 import logging
 
-from .flagdays import flagdays_dk_api
+from .flagdays_dk_api import flagDays_DK
+
 from homeassistant.const import (
     CONF_LATITUDE,
     CONF_LONGITUDE,
-    )
+)
 from .const import (
-	DOMAIN,
-	CONF_CLIENT,
-	CONF_PLATFORM,
-	)
+    DOMAIN,
+    CONF_CLIENT,
+    CONF_FLAGS,
+    CONF_FLAGS_DAYS,
+    CONF_TIME_OFFSET,
+    CONF_PLATFORM,
+    DEFAULT_FLAG,
+    DEFAULT_TIME_OFFSET,
+)
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 _LOGGER = logging.getLogger(__name__)
 
+
 async def async_setup(hass, config):
-	conf = config.get(DOMAIN)
-	if conf is None:
-		return True
+    # Get the configuration
+    conf = config.get(DOMAIN)
+    # If no config, abort
+    if conf is None:
+        return True
 
-	# Get the coordinates from the HA config
-	coordinates = {}
-	coordinates['lat'] = config.get(CONF_LATITUDE, hass.config.latitude)
-	coordinates['lon'] = config.get(CONF_LONGITUDE, hass.config.longitude)
-	_LOGGER.debug("Coordinates loaded from Home Assistant: " + str(len(coordinates)))
+    coordinates = {}
+    coordinates["lat"] = config.get(CONF_LATITUDE, hass.config.latitude)
+    coordinates["lon"] = config.get(CONF_LONGITUDE, hass.config.longitude)
 
-	# Get custom events and the flags in inventory from the config
-	events = config[DOMAIN].get('events', {})
-	_LOGGER.debug("Events loaded from config: " + str(len(events)))
-	flags = config[DOMAIN].get('flags', {})
-	_LOGGER.debug("Flags loaded from config: " + str(len(flags)))
-	offset = config[DOMAIN].get('offset', 0)
-	_LOGGER.debug("Offset set to: " + str(offset) + " from config")
+    # Load flags - append default
+    flags = config[DOMAIN].get(CONF_FLAGS, [DEFAULT_FLAG])
+    if not DEFAULT_FLAG in flags:
+        flags.append(DEFAULT_FLAG)
+    _LOGGER.debug("Flags loaded from config: " + str(flags))
 
-	# Initialize the Client
-	client  = flagdays_dk_api(coordinates, offset, events, flags)
-	hass.data[DOMAIN] = {
-		CONF_CLIENT: client,
-	}
+    # Load time offest else DEFAULT_TIME_OFFSET
+    time_offset = config[DOMAIN].get(CONF_TIME_OFFSET, DEFAULT_TIME_OFFSET)
 
-	# Add sensors
-	hass.async_create_task(
-		hass.helpers.discovery.async_load_platform(CONF_PLATFORM, DOMAIN, conf, config)
-	)
+    # Load private flagdays
+    privateFlagDays = config[DOMAIN].get(CONF_FLAGS_DAYS, [])
 
-	# Initialization was successful.
-	return True
+    flagDays = flagDays_DK(flags, coordinates, time_offset, privateFlagDays)
+    hass.data[DOMAIN] = {CONF_CLIENT: flagDays}
+
+    # Add sensors
+    hass.async_create_task(
+        hass.helpers.discovery.async_load_platform(CONF_PLATFORM, DOMAIN, conf, config)
+    )
+
+    # Initialization was successful.
+    return True
