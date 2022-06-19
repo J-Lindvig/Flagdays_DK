@@ -13,7 +13,7 @@ Sensor with official flagdays in Denmark, with a option to add your own (birthda
 The integration has been rewritten and have received some TLC and improvements.
 + ~~offset~~ is now **time_offset**. Default is 10 minutes
 + **hide_past (new feature)**, we are able to show flagdays in the past setting the to False, Default is True
-+ flags now uses the name of the flags, /Erfalasorput/ (Greenland) and *Merkið* (Faroe Islands)
++ flags now uses the name of the flags, *Erfalasorput* (Greenland) and *Merkið* (Faroe Islands)
 + ~~events~~ is now **flagdays** and the flagdays listed is now:
   + **name**, the name of the flagday
   + **flag**, the flag to use
