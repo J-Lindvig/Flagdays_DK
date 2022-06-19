@@ -31,7 +31,7 @@ Add the following to your configuration.yaml
 ```yaml
 flagdays_dk:
   # Optional entries
-  time_offset: 5      # Time in minutes before flag up/down times, used for triggers fx. automation
+  time_offset: 5      # Time in minutes before flag up/down times, used for triggers fx. automation, Default is 10
   hide_past: false    # Hide flagdays from the past, default is True
   flags:              # Commonwealth (Greenland and Faroe Islands) flags we own 
     - erfalasorput
