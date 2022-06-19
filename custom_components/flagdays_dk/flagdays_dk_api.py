@@ -43,9 +43,12 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class flagDays_DK:
-    def __init__(self, flags, coordinates, timeOffset, privateFlagDays=[]):
+    def __init__(
+        self, flags, coordinates, timeOffset, privateFlagDays=[], hidePast=True
+    ):
         self._flagDays = []
         self._privateFlagDays = privateFlagDays
+        self._hidePast = hidePast
         self._flags = flags
         self._coordinates = coordinates
         self._timeOffset = timeOffset
@@ -64,6 +67,7 @@ class flagDays_DK:
         self._flagDays.sort(key=lambda x: x._daysToFlagDay)
 
     def _getPrivateFlagDays(self):
+        _LOGGER.debug("Processing private flagdays...")
         privateFlagDays = []
         for privateFlagDay in self._privateFlagDays:
             aFlagDay = flagDay()
@@ -118,8 +122,11 @@ class flagDays_DK:
         return privateFlagDays
 
     def _getOfficialFlagDays(self):
+        _LOGGER.debug("Processing official flagdays...")
         aFlagDays = []
         r = self._session.get(FLAGDAY_URL, headers=HEADERS)
+
+        _LOGGER.debug(f"{ FLAGDAY_URL}: {r.status_code}")
         if r.status_code != 200:
             return r.status_code
 
@@ -174,11 +181,14 @@ class flagDays_DK:
                 return flagDay
 
     def getFutureFlagDays(self):
-        futureFlagDays = []
-        for flagDay in self._flagDays:
-            if flagDay.getTimestamp() >= self._todayTS:
-                futureFlagDays.append(flagDay)
-        return futureFlagDays
+        if self._hidePast:
+            futureFlagDays = []
+            for flagDay in self._flagDays:
+                if flagDay.getTimestamp() >= self._todayTS:
+                    futureFlagDays.append(flagDay)
+            return futureFlagDays
+        else:
+            return self._flagDays
 
 
 class flagDay:

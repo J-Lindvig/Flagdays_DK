@@ -27,6 +27,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         # Retrieve the client stored in the hass data stack
         flagDays = hass.data[DOMAIN][CONF_CLIENT]
         # Call, and wait for it to finish, the function with the refresh procedure
+        _LOGGER.debug("Updating flagdays...")
         await hass.async_add_executor_job(flagDays.update)
 
     # Create a coordinator

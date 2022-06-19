@@ -13,6 +13,7 @@ from .const import (
     CONF_CLIENT,
     CONF_FLAGS,
     CONF_FLAGS_DAYS,
+    CONF_HIDE_PAST,
     CONF_TIME_OFFSET,
     CONF_PLATFORM,
     DEFAULT_FLAG,
@@ -38,16 +39,26 @@ async def async_setup(hass, config):
     flags = config[DOMAIN].get(CONF_FLAGS, [DEFAULT_FLAG])
     if not DEFAULT_FLAG in flags:
         flags.append(DEFAULT_FLAG)
-    _LOGGER.debug("Flags loaded from config: " + str(flags))
+    _LOGGER.debug(f"Flags loaded from config: { flags }")
 
     # Load time offest else DEFAULT_TIME_OFFSET
     time_offset = config[DOMAIN].get(CONF_TIME_OFFSET, DEFAULT_TIME_OFFSET)
+    _LOGGER.debug(f"Time offset set to: { time_offset } minutes")
+
+    # Load boolean to hide flagdays in the past
+    hidePast = config[DOMAIN].get(CONF_HIDE_PAST, True)
+    _LOGGER.debug(f"Hide flagdays in the past is { hidePast }")
 
     # Load private flagdays
     privateFlagDays = config[DOMAIN].get(CONF_FLAGS_DAYS, [])
+    if privateFlagDays:
+        _LOGGER.debug(f"Added { len(privateFlagDays) } private flagdays")
 
-    flagDays = flagDays_DK(flags, coordinates, time_offset, privateFlagDays)
-    hass.data[DOMAIN] = {CONF_CLIENT: flagDays}
+    hass.data[DOMAIN] = {
+        CONF_CLIENT: flagDays_DK(
+            flags, coordinates, time_offset, privateFlagDays, hidePast
+        )
+    }
 
     # Add sensors
     hass.async_create_task(

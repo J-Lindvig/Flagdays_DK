@@ -27,8 +27,10 @@ class SunFuture:
             "date": dateStr,
             "formatted": 0,
         }
+        _LOGGER.debug(f"Fetching sunrise/sunset on { dateStr }")
         r = self._session.get(SUN_URL, params=payload)
 
+        _LOGGER.debug(f"{ SUN_URL }: { r.status_code }")
         if r.status_code == 200:
             r = r.json()
             if r["status"].lower() == "ok":
