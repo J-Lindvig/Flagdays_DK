@@ -12,7 +12,8 @@ Sensor with official flagdays in Denmark, with a option to add your own (birthda
 ## BREAKING CHANGES
 The integration has been rewritten and have received some TLC and improvements.
 + ~~offset~~ is now **time_offset**
-+ flags, no change
++ **hide_past (new feature)**, we are able to show flagdays in the past setting the to False, Default is True
++ flags now uses the name of the flags, /Erfalasorput/ (Greenland) and *Merkið* (Faroe Islands)
 + ~~events~~ is now **flagdays** and the flagdays listed is now:
   + **name**, the name of the flagday
   + **flag**, the flag to use
@@ -30,11 +31,12 @@ Add the following to your configuration.yaml
 ```yaml
 flagdays_dk:
   # Optional entries
-  time_offset: 30
-  flags:
+  time_offset: 5      # Time in minutes before flag up/down times, used for triggers fx. automation
+  hide_past: false    # Hide flagdays from the past, default is True
+  flags:              # Commonwealth (Greenland and Faroe Islands) flags we own 
     - erfalasorput
     - merkið
-  flagdays:
+  flagdays:           # List of private flagdays
     - name: Jolly Roger Memorial Day
       flag: Jolly Roger
       date: 10-06-1975
