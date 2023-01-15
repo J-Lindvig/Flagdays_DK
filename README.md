@@ -25,7 +25,7 @@ flagdays_dk:
   # Time in minutes before flag up/down times, used for triggers fx. automation, Default is 10
   offset: 5
 
-  " Include and Exclude options
+  # Include and Exclude options
   include:
     - Erfalasorput    # Either name of a special (commonwealth) flag
     - Færøerne        # or a string with a part of the flagdays name
