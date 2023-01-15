@@ -37,10 +37,10 @@ flagdays_dk:
 
   # List of private flagdays
   flagdays:
-    # Sensor with a datetime attribute named **date**
+    # Sensor with a datetime attribute named "date"
     - sensor.birthday_hjaltes_fodselsdag
 
-    # Group of sensors with a datetime attribute named **date**
+    # Group of sensors with a datetime attribute named "date"
     - group.birthdays
 
     # Manual entry with a custom flag, calculation of age (year stated in date) and a high priority (0 = highest)
