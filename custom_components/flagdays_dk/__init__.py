@@ -2,22 +2,23 @@ from __future__ import annotations
 
 import logging
 
-from .flagdays_dk_api import flagDays_DK
+from .flagdays_dk import flagdays_dk
+from collections import OrderedDict
 
-from homeassistant.const import (
-    CONF_LATITUDE,
-    CONF_LONGITUDE,
-)
 from .const import (
     DOMAIN,
     CONF_CLIENT,
-    CONF_FLAGS,
-    CONF_FLAGS_DAYS,
-    CONF_HIDE_PAST,
-    CONF_TIME_OFFSET,
+    CONF_EXCLUDE,
+    CONF_FLAGDAYS,
+    CONF_INCLUDE,
+    CONF_OFFSET,
     CONF_PLATFORM,
-    DEFAULT_FLAG,
-    DEFAULT_TIME_OFFSET,
+    DEFAULT_DATE_FORMAT,
+    DEFAULT_OFFSET,
+    KEY_DATE,
+    KEY_FRIENDLY_NAME,
+    KEY_NAME,
+    KEY_PRIORITY,
 )
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -31,33 +32,62 @@ async def async_setup(hass, config):
     if conf is None:
         return True
 
-    coordinates = {}
-    coordinates["lat"] = config.get(CONF_LATITUDE, hass.config.latitude)
-    coordinates["lon"] = config.get(CONF_LONGITUDE, hass.config.longitude)
+    # Create a instance of the flagdays_dk
+    flagdays = flagdays_dk(
+        include=config[DOMAIN].get(CONF_INCLUDE, []),
+        exclude=config[DOMAIN].get(CONF_EXCLUDE, []),
+    )
 
-    # Load flags - append default
-    flags = config[DOMAIN].get(CONF_FLAGS, [DEFAULT_FLAG])
-    if not DEFAULT_FLAG in flags:
-        flags.append(DEFAULT_FLAG)
-    _LOGGER.debug(f"Flags loaded from config: { flags }")
+    def flagdayFromSensor(entity):
+        flagdayObj = hass.states.get(customFlagday)
+        if KEY_DATE in flagdayObj.attributes:
+            return {
+                flagdayObj.attributes[KEY_FRIENDLY_NAME]: {
+                    KEY_DATE: flagdayObj.attributes[KEY_DATE].strftime(
+                        DEFAULT_DATE_FORMAT
+                    ),
+                    KEY_PRIORITY: priorityCheck(flagdayObj.attributes),
+                }
+            }
 
-    # Load time offest else DEFAULT_TIME_OFFSET
-    time_offset = config[DOMAIN].get(CONF_TIME_OFFSET, DEFAULT_TIME_OFFSET)
-    _LOGGER.debug(f"Time offset set to: { time_offset } minutes")
+    def flagdayFromConfig(customFlagday):
+        flagdayData = dict(customFlagday)
+        flagdayData.update({KEY_PRIORITY: priorityCheck(customFlagday)})
+        return {customFlagday.pop(KEY_NAME): flagdayData}
 
-    # Load boolean to hide flagdays in the past
-    hidePast = config[DOMAIN].get(CONF_HIDE_PAST, True)
-    _LOGGER.debug(f"Hide flagdays in the past is { hidePast }")
+    def priorityCheck(payload, priority=0):
+        return priority if not KEY_PRIORITY in payload else payload[KEY_PRIORITY]
 
-    # Load private flagdays
-    privateFlagDays = config[DOMAIN].get(CONF_FLAGS_DAYS, [])
-    if privateFlagDays:
-        _LOGGER.debug(f"Added { len(privateFlagDays) } private flagdays")
+    # Dict to hold the possible custom flagdays
+    customFlagdays = {}
+    for customFlagday in config[DOMAIN].get(CONF_FLAGDAYS):
+
+        # Sensor or Group of Sensors
+        if type(customFlagday) is str:
+            domain = customFlagday.split(".", 1)[0]
+
+            # Sensor
+            if domain == "sensor":
+                customFlagdays.update(flagdayFromSensor(customFlagday))
+
+            # Group of Sensors
+            elif domain == "group":
+                for customFlagday in hass.states.get(customFlagday).attributes[
+                    "entity_id"
+                ]:
+                    if customFlagday.split(".", 1)[0] == "sensor":
+                        customFlagdays.update(flagdayFromSensor(customFlagday))
+
+        # Element from YAML
+        elif type(customFlagday) is OrderedDict:
+            customFlagdays.update(flagdayFromConfig(customFlagday))
+
+    # Add the custom flagdays
+    flagdays.add(customFlagdays)
 
     hass.data[DOMAIN] = {
-        CONF_CLIENT: flagDays_DK(
-            flags, coordinates, time_offset, privateFlagDays, hidePast
-        )
+        CONF_CLIENT: flagdays,
+        CONF_OFFSET: config[DOMAIN].get(CONF_OFFSET, DEFAULT_OFFSET),
     }
 
     # Add sensors

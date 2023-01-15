@@ -1,15 +1,31 @@
 from __future__ import annotations
 
 import logging
+from astral import Observer
+from astral.sun import sun
+from datetime import datetime
+from dateutil import tz
 
 from homeassistant.const import ATTR_ATTRIBUTION
 from .const import (
     CONF_CLIENT,
+    CONF_OFFSET,
     CONF_PLATFORM,
     CREDITS,
     DOMAIN,
     UPDATE_INTERVAL,
 )
+
+ATTR_AGE = "age"
+ATTR_CONCURRENT = "concurrent_flagdays"
+ATTR_NAME = "name"
+ATTR_FLAG = "flag"
+ATTR_FLAG_DOWN = "flag_down_time"
+ATTR_FLAG_DOWN_TRIGGER = "flag_down_time_trigger"
+ATTR_FLAG_UP = "flag_up_time"
+ATTR_FLAG_UP_TRIGGER = "flag_up_time_trigger"
+ATTR_HALF_MAST = "half_mast"
+ATTR_YEARS = "years"
 
 from datetime import timedelta
 
@@ -25,10 +41,10 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     # Define a update function
     async def async_update_data():
         # Retrieve the client stored in the hass data stack
-        flagDays = hass.data[DOMAIN][CONF_CLIENT]
+        flagdays = hass.data[DOMAIN][CONF_CLIENT]
         # Call, and wait for it to finish, the function with the refresh procedure
         _LOGGER.debug("Updating flagdays...")
-        await hass.async_add_executor_job(flagDays.update)
+        await hass.async_add_executor_job(flagdays.update)
 
     # Create a coordinator
     coordinator = DataUpdateCoordinator(
@@ -49,25 +65,23 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 
 
 class FlagDaysSensor(SensorEntity):
-    def __init__(self, hass, coordinator, flagDays_DK) -> None:
+    def __init__(self, hass, coordinator, flagdays) -> None:
         self._hass = hass
         self._coordinator = coordinator
-        self._flagDays_DK = flagDays_DK
-        self._nextFlagDay = self._flagDays_DK.getNextFlagDay()
-        self._name = DOMAIN
-        self._icon = "mdi:flag"
+        self._flagdays = flagdays
+        self._nextFlagday = flagdays.getFlagdays()[0]
 
     @property
     def name(self):
-        return self._name
+        return self._nextFlagday.getName()
 
     @property
     def icon(self):
-        return self._icon
+        return "mdi:flag"
 
     @property
     def state(self):
-        return self._nextFlagDay.getDays()
+        return self._flagdays.getDays()
 
     @property
     def unique_id(self):
@@ -75,32 +89,49 @@ class FlagDaysSensor(SensorEntity):
 
     @property
     def extra_state_attributes(self):
-        attr = {}
+        # Calculate the sunrise and sunset from the coordinates of the HA server
+        geo = Observer(
+            self._hass.config.latitude,
+            self._hass.config.longitude,
+            self._hass.config.elevation,
+        )
+        s = sun(
+            geo, date=self._nextFlagday.getDate(), tzinfo=tz.gettz("Europe/Copenhagen")
+        )
 
-        attr["name"] = self._nextFlagDay.getName()
-        attr["flag"] = self._nextFlagDay.getFlag()
-        attr["instructions"] = self._nextFlagDay.getInstructions()
-        attr["flag_up_time"] = self._nextFlagDay.getTimeTable()["flagUpTime"]
-        attr["flag_down_time"] = self._nextFlagDay.getTimeTable()["flagDownTime"]
-        attr["flag_up_time_trigger"] = self._nextFlagDay.getTimeTable()[
-            "flagUpTriggerTime"
-        ]
-        attr["flag_down_time_trigger"] = self._nextFlagDay.getTimeTable()[
-            "flagDownTriggerTime"
-        ]
+        # Calculate the correct time for flag up
+        flagUpTime = (
+            datetime.strptime("08:00", "%H:%M")
+            if s["sunrise"].hour < 8
+            else s["sunrise"]
+        )
 
+        attr = {
+            ATTR_YEARS: self._nextFlagday.getYears(),
+            ATTR_FLAG: self._nextFlagday.getFlag(),
+            ATTR_FLAG_UP: flagUpTime.strftime("%H:%M"),
+            ATTR_FLAG_DOWN: s["sunset"].strftime("%H:%M"),
+            ATTR_FLAG_UP_TRIGGER: (
+                flagUpTime - timedelta(minutes=self._hass.data[DOMAIN][CONF_OFFSET])
+            ).strftime("%H:%M"),
+            ATTR_FLAG_DOWN_TRIGGER: (
+                s["sunset"] - timedelta(minutes=self._hass.data[DOMAIN][CONF_OFFSET])
+            ).strftime("%H:%M"),
+            ATTR_HALF_MAST: self._nextFlagday.getHalfMast(),
+            ATTR_CONCURRENT: self._flagdays.getConcurrentFlagdays(
+                self._nextFlagday.getDate()
+            ),
+        }
         attr["future_flagdays"] = []
-        for flagDay in self._flagDays_DK.getFutureFlagDays():
+        for flagday in self._flagdays.getFutureFlagdays():
             attr["future_flagdays"].append(
                 {
-                    "name": flagDay.getName(),
-                    "date": flagDay.getDateStr(),
-                    "days": flagDay.getDays(),
+                    "name": flagday.getName(),
+                    "date": flagday.getDate("%-d-%-m"),
+                    "date_end": flagday.getDateEnd("%-d-%-m"),
                 }
             )
-
         attr[ATTR_ATTRIBUTION] = CREDITS
-
         return attr
 
     @property

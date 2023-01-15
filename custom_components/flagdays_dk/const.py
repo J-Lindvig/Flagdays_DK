@@ -1,18 +1,19 @@
 CONF_CLIENT = "client"
-CONF_FLAGS = "flags"
-CONF_FLAGS_DAYS = "flagdays"
-CONF_HIDE_PAST = "hide_past"
-CONF_TIME_OFFSET = "time_offset"
+CONF_EXCLUDE = "exclude"
+CONF_FLAGDAYS = "flagdays"
+CONF_INCLUDE = "include"
+CONF_OFFSET = "offset"
 CONF_PLATFORM = "sensor"
-DEFAULT_COORDINATES = {"lat": 55.395903819648304, "lon": 10.388097722778282}
-DEFAULT_FLAG = "dannebrog"
-DEFAULT_TIME_OFFSET = 10
+DEFAULT_DATE_FORMAT = "%d-%m-%Y"
+DEFAULT_OFFSET = 10
 DOMAIN = "flagdays_dk"
-FLAGDAY_URL = "https://www.justitsministeriet.dk/temaer/flagning/flagdage/"
 UPDATE_INTERVAL = 60
 
-CREDITS = [
-    {"Created by": "J-Lindvig (https://github.com/J-Lindvig)"},
-    {"Data provided by": "Justitsministeriet (" + FLAGDAY_URL + ")"},
-    {"Sunrise/sunset provided by": "Sunrise-Sunset (https://sunrise-sunset.org/api)"},
-]
+CREDITS = "J-Lindvig (https://github.com/J-Lindvig)"
+
+KEY_DATE = "date"
+KEY_DATE_END = "date_end"
+KEY_FLAG = "flag"
+KEY_FRIENDLY_NAME = "friendly_name"
+KEY_NAME = "name"
+KEY_PRIORITY = "priority"
