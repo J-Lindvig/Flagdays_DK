@@ -1,0 +1,12 @@
+{
+  "domain": "flagdays_dk",
+  "name": "FlagDays DK",
+  "documentation": "https://github.com/J-Lindvig/Flagdays_DK",
+  "issue_tracker": "https://github.com/J-Lindvig/Flagdays_DK/issues",
+  "dependencies": [],
+  "after_dependencies": ["anniversaries", "group"],
+  "codeowners": ["@J-Lindvig"],
+  "requirements": ["astral"],
+  "iot_class": "calculated",
+  "version": "3.0.2"
+}
