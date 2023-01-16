@@ -8,5 +8,5 @@
   "codeowners": ["@J-Lindvig"],
   "requirements": ["astral"],
   "iot_class": "calculated",
-  "version": "3.0"
+  "version": "3.0.1"
 }

@@ -26,21 +26,21 @@ STRINGS = {
     "CHRISTS_ASCENSION": "Kristi Himmelfartsdag",
     "EASTER_SUNDAY": "Påskedag",
     "GOOD_FRIDAY": "Langfredag",
-    "OCCUPATION_DAY": "Besættelsesdagen",
     "PENTECOST": "Pinsedag",
-    "ROYAL": "Kongelige",
+    "ROYAL": ["Kongelige", "Majestæt"],
 }
+HALF_MAST_DAYS = [STRINGS["GOOD_FRIDAY"], "Besættelsesdagen"]
 
 REGULAR_FLAGDAYS = {
     "Nytårsdag": {KEY_DATE: "1-1"},
     "Hendes Kongelige Højhed Kronprinsesse Marys fødselsdag": {KEY_DATE: "5-2-1972"},
     "Hendes Kongelige Højhed Prinsesse Maries fødselsdag": {KEY_DATE: "6-2-1976"},
-    "Besættelsesdagen": {KEY_DATE: "9-4", KEY_PRIORITY: 20},
+    "Besættelsesdagen": {KEY_DATE: "9-4-1940", KEY_PRIORITY: 20},
     "Hendes Majestæt Dronningens fødselsdag": {KEY_DATE: "16-4-1940"},
     "Hendes Kongelige Højhed Prinsesse Benediktes fødselsdag": {KEY_DATE: "29-4-1944"},
-    STRINGS["OCCUPATION_DAY"]: {KEY_DATE: "5-5"},
+    "Befrielsesdagen": {KEY_DATE: "5-5-1945"},
     "Hans Kongelige Højhed Kronprins Frederiks fødselsdag": {KEY_DATE: "26-5-1968"},
-    "Grundlovsdag": {KEY_DATE: "5-6"},
+    "Grundlovsdag": {KEY_DATE: "5-6-1849"},
     "Hans Kongelige Højhed Prins Joachims fødselsdag": {KEY_DATE: "7-7-1969"},
     "Valdemarsdag og genforeningsdag": {KEY_DATE: "15-6"},
     "Grønlands nationaldag": {KEY_DATE: "21-6", KEY_FLAG: "Erfalasorput"},
@@ -52,7 +52,7 @@ REGULAR_FLAGDAYS = {
 
 
 class flagdays_dk:
-    def __init__(self, include=None, exclude=None):
+    def __init__(self, include=[], exclude=[]):
         self._flagdays = []
         self._days = -1
         self._in_exclude = {
@@ -192,14 +192,14 @@ class flagday:
             )
 
         # Halfmast
-        if self._name in STRINGS.values():
+        if self._name in HALF_MAST_DAYS:
             self._halfMast = (
                 True
                 if self._name == STRINGS["GOOD_FRIDAY"]
                 else datetime.strptime("12:00", "%H:%M").time()
             )
 
-        if STRINGS["ROYAL"] in name:
+        if name in STRINGS["ROYAL"]:
             self._priority = 30
 
         self._priority = (
