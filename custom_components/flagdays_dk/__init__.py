@@ -60,7 +60,7 @@ async def async_setup(hass, config):
 
     # Dict to hold the possible custom flagdays
     customFlagdays = {}
-    for customFlagday in config[DOMAIN].get(CONF_FLAGDAYS):
+    for customFlagday in config[DOMAIN].get(CONF_FLAGDAYS, []):
 
         # Sensor or Group of Sensors
         if type(customFlagday) is str:
