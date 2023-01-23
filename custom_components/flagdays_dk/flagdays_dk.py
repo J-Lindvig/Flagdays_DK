@@ -52,10 +52,12 @@ REGULAR_FLAGDAYS = {
 
 
 class flagdays_dk:
+    flagdays = []
+    days = -1
+
     def __init__(self, include=[], exclude=[]):
-        self._flagdays = []
-        self._days = -1
-        self._in_exclude = {
+
+        self.in_exclude = {
             CONF_INCLUDE: [DEFAULT_FLAG.lower()]
             + list(map(lambda x: x.lower(), include)),
             CONF_EXCLUDE: list(map(lambda x: x.lower(), exclude)),
@@ -84,10 +86,10 @@ class flagdays_dk:
                 # Does the name of the flagday containing our inclusion string
                 # If so - reverse the boolean
                 if not (
-                    flagdayData[KEY_FLAG].lower() in self._in_exclude[CONF_INCLUDE]
+                    flagdayData[KEY_FLAG].lower() in self.in_exclude[CONF_INCLUDE]
                     or any(
                         includeStr in flagdayName.lower()
-                        for includeStr in self._in_exclude[CONF_INCLUDE]
+                        for includeStr in self.in_exclude[CONF_INCLUDE]
                     )
                 ):
                     removeList.add(flagdayName)
@@ -95,7 +97,7 @@ class flagdays_dk:
             # Exlude by removal of matching flagdays
             if any(
                 excludeStr in flagdayName.lower()
-                for excludeStr in self._in_exclude[CONF_EXCLUDE]
+                for excludeStr in self.in_exclude[CONF_EXCLUDE]
             ):
                 removeList.add(flagdayName)
 
@@ -106,17 +108,19 @@ class flagdays_dk:
     def add(self, flagdays):
         if type(flagdays) is dict:
             for flagdayName, flagdayData in flagdays.items():
-                self._flagdays.append(flagday(name=flagdayName, data=flagdayData))
+                self.flagdays.append(flagday(name=flagdayName, data=flagdayData))
 
             self.sort()
 
     def sort(self):
-        self._flagdays.sort(key=lambda x: (x.getDate(), x.getPriority()))
+        self.flagdays.sort(
+            key=lambda flagdayObj: (flagdayObj.date, flagdayObj.priority)
+        )
         self.update()
 
     def update(self):
         today = datetime.today()
-        for flagdayObj in self._flagdays:
+        for flagdayObj in self.flagdays:
 
             # Update the dates and remove old flagdays
             if relativedelta(flagdayObj.getDate(), today).days < 0:
@@ -128,113 +132,93 @@ class flagdays_dk:
                     type(dateEnd) is datetime
                     and relativedelta(dateEnd, today).days >= 0
                 ):
-                    flagdayObj.setDate(today.date())
+                    flagdayObj.date = today.date()
                 else:
-                    self._flagdays.remove(flagdayObj)
+                    self.flagdays.remove(flagdayObj)
 
         # Update number of days to next flagday
-        self._days = relativedelta(
-            self._flagdays[0].getDate(), datetime.today().date()
+        self.days = relativedelta(
+            self.flagdays[0].getDate(), datetime.today().date()
         ).days
 
-    def getDays(self):
-        return self._days
-
-    def getFlagdays(self):
-        return self._flagdays
-
     def getFutureFlagdays(self):
-        return self._flagdays[1:]
+        return self.flagdays[1:]
 
     def getConcurrentFlagdays(self, date):
         # Loop from 2nd element, searching for flagdays with the same date
         # Return list of flagdaynames.
         return list(
             (flagday.getName())
-            for flagday in self._flagdays[1:]
+            for flagday in self.flagdays[1:]
             if flagday.getDate() == date
         )
 
 
 class flagday:
+    name = None
+    flag = None
+    years = None
+    dateEnd = None
+    halfMast = False
+
     def __init__(self, name=str, data=dict):
-        self._name = name
-        self._years = None
-        self._dateEnd = None
-        self._halfMast = False
+        self.name = name
 
         # Date of flagday
         if type(data[KEY_DATE]) is str:
             if data[KEY_DATE].count("-") > 1:
                 # Strip the year from the datestring, append current year and convert to datetime
-                self._date = datetime.strptime(
+                self.date = datetime.strptime(
                     data[KEY_DATE].rpartition("-")[0]
                     + "-"
                     + str(datetime.today().year),
                     DEFAULT_DATE_FORMAT,
                 )
-                self._years = relativedelta(
-                    self._date, datetime.strptime(data[KEY_DATE], "%d-%m-%Y")
+                self.years = relativedelta(
+                    self.date, datetime.strptime(data[KEY_DATE], "%d-%m-%Y")
                 ).years
             else:
-                self._date = datetime.strptime(
+                self.date = datetime.strptime(
                     data[KEY_DATE] + "-" + str(datetime.today().year),
                     DEFAULT_DATE_FORMAT,
                 )
         else:
-            self._date = data[KEY_DATE]
+            self.date = data[KEY_DATE]
 
         # End of prolonged flagday
         if KEY_DATE_END in data:
-            self._dateEnd = datetime.strptime(
+            self.dateEnd = datetime.strptime(
                 data[KEY_DATE_END] + "-" + str(datetime.today().year),
                 DEFAULT_DATE_FORMAT,
             )
 
         # Halfmast
-        if self._name in HALF_MAST_DAYS:
-            self._halfMast = (
+        if self.name in HALF_MAST_DAYS:
+            self.halfMast = (
                 True
-                if self._name == STRINGS["GOOD_FRIDAY"]
+                if self.name == STRINGS["GOOD_FRIDAY"]
                 else datetime.strptime("12:00", "%H:%M").time()
             )
 
         if name in STRINGS["ROYAL"]:
-            self._priority = 30
+            self.priority = 30
 
-        self._priority = (
-            data[KEY_PRIORITY] if KEY_PRIORITY in data else DEFAULT_PRIORITY
-        )
+        self.priority = data[KEY_PRIORITY] if KEY_PRIORITY in data else DEFAULT_PRIORITY
 
-        self._flag = data[KEY_FLAG] if KEY_FLAG in data else DEFAULT_FLAG
+        self.flag = data[KEY_FLAG] if KEY_FLAG in data else DEFAULT_FLAG
 
     def getDate(self, dateFormat=None):
         if dateFormat is None:
-            return self._date
-        return self._date.strftime(dateFormat)
-
-    def setDate(self, date):
-        self._date = date
+            return self.date
+        return self.date.strftime(dateFormat)
 
     def getDateEnd(self, dateFormat=None):
         if dateFormat is None:
-            return self._dateEnd
-        elif type(self._dateEnd) is datetime:
-            return self._dateEnd.strftime(dateFormat)
-
-    def getFlag(self):
-        return self._flag
+            return self.dateEnd
+        elif type(self.dateEnd) is datetime:
+            return self.dateEnd.strftime(dateFormat)
 
     def getHalfMast(self, timeFormat="%H:%M"):
-        if type(self._halfMast) is bool:
-            return self._halfMast
-        return self._halfMast.strftime(timeFormat)
-
-    def getName(self):
-        return self._name
-
-    def getPriority(self):
-        return self._priority
-
-    def getYears(self):
-        return self._years
+        if type(self.halfMast) is bool:
+            return self.halfMast
+        return self.halfMast.strftime(timeFormat)

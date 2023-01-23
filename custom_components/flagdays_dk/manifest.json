@@ -6,7 +6,7 @@
   "dependencies": [],
   "after_dependencies": ["anniversaries", "group"],
   "codeowners": ["@J-Lindvig"],
-  "requirements": ["astral"],
+  "requirements": ["astral", "requests_html"],
   "iot_class": "calculated",
-  "version": "3.0.2"
+  "version": "3.0.3"
 }
