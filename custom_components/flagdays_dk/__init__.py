@@ -4,19 +4,21 @@ import logging
 
 from .flagdays_dk import flagdays_dk
 from collections import OrderedDict
+from datetime import datetime
 
+from homeassistant.const import ATTR_FRIENDLY_NAME, ATTR_DATE
 from .const import (
-    DOMAIN,
+    CONF_ATTRIBUTE_NAMES,
     CONF_CLIENT,
     CONF_EXCLUDE,
     CONF_FLAGDAYS,
     CONF_INCLUDE,
     CONF_OFFSET,
     CONF_PLATFORM,
+    DEFAULT_ATTRIBUTE_NAMES,
     DEFAULT_DATE_FORMAT,
     DEFAULT_OFFSET,
-    KEY_DATE,
-    KEY_FRIENDLY_NAME,
+    DOMAIN,
     KEY_NAME,
     KEY_PRIORITY,
 )
@@ -38,15 +40,29 @@ async def async_setup(hass, config):
         exclude=config[DOMAIN].get(CONF_EXCLUDE, []),
     )
 
+    # Extract attribute names to search for - make it lowercase
+    attr_names = set([x.lower() for x in config[DOMAIN].get(CONF_ATTRIBUTE_NAMES, [])])
+
     def flagdayFromSensor(entity):
         flagdayObj = hass.states.get(customFlagday)
-        if KEY_DATE in flagdayObj.attributes:
+
+        # Create a list of keys from the attribute names which are present in the attributes
+        attr_date_keys = list(attr_names.intersection(set(flagdayObj.attributes)))
+
+        # find the first key of type datetime
+        attr_date_key = None
+        for date_key in attr_date_keys:
+            if type(flagdayObj.attributes[date_key]) is datetime:
+                attr_date_key = date_key
+                break
+
+        # Did we find a key of datetime type
+        if attr_date_key:
             return {
-                flagdayObj.attributes[KEY_FRIENDLY_NAME]: {
-                    KEY_DATE: flagdayObj.attributes[KEY_DATE].strftime(
+                flagdayObj.attributes[ATTR_FRIENDLY_NAME]: {
+                    ATTR_DATE: flagdayObj.attributes[attr_date_key].strftime(
                         DEFAULT_DATE_FORMAT
-                    ),
-                    KEY_PRIORITY: priorityCheck(flagdayObj.attributes),
+                    )
                 }
             }
 

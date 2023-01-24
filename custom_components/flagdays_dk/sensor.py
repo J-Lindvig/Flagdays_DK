@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-import logging
 from astral import Observer
 from astral.sun import sun
 from datetime import datetime, timedelta
 from dateutil import tz
 
-from homeassistant.const import ATTR_ATTRIBUTION
+import logging
+import pytz
+
+from homeassistant.const import ATTR_ATTRIBUTION, ATTR_DATE, ATTR_DEVICE_CLASS
 from .const import (
     CONF_CLIENT,
     CONF_OFFSET,
@@ -17,14 +19,12 @@ from .const import (
 )
 
 ATTR_CONCURRENT = "concurrent_flagdays"
-ATTR_DATE = "date"
 ATTR_DATE_END = "date_end"
-ATTR_FLAGDAY_NAME = "flagday_name"
+ATTR_DAYS = "days"
 ATTR_FLAG = "flag"
+ATTR_FLAGDAY_NAME = "flagday_name"
 ATTR_FLAG_DOWN = "flag_down_time"
-ATTR_FLAG_DOWN_TRIGGER = "flag_down_time_trigger"
 ATTR_FLAG_UP = "flag_up_time"
-ATTR_FLAG_UP_TRIGGER = "flag_up_time_trigger"
 ATTR_HALF_MAST = "half_mast"
 ATTR_YEARS = "years"
 
@@ -69,6 +69,8 @@ class FlagDaysSensor(SensorEntity):
         self.coordinator = coordinator
         self.flagdays = flagdays
         self.nextFlagday = flagdays.flagdays[0]
+        self.flagUpTime, self.flagDownTime = 0, 0
+        self.entity_id = "sensor.kast_op"
 
     @property
     def name(self):
@@ -80,7 +82,31 @@ class FlagDaysSensor(SensorEntity):
 
     @property
     def state(self):
-        return self.flagdays.days
+        geo = Observer(
+            self.hass.config.latitude,
+            self.hass.config.longitude,
+            self.hass.config.elevation,
+        )
+        s = sun(geo, date=self.nextFlagday.date, tzinfo=tz.gettz("Europe/Copenhagen"))
+        self.flagUpTime = (
+            datetime.strptime("08:00", "%H:%M")
+            if s["sunrise"].hour < 8
+            else s["sunrise"]
+        )
+        self.flagDownTime = s["sunset"]
+
+        dt_now = datetime.now().astimezone(pytz.timezone("Europe/Copenhagen"))
+        offset = timedelta(minutes=self.hass.data[DOMAIN][CONF_OFFSET])
+
+        if self.flagUpTime > dt_now:
+            return self.flagUpTime - offset
+        elif (
+            type(self.nextFlagday.halfMast) is datetime
+            and self.nextFlagday.halfMast > dt_now
+        ):
+            return self.nextFlagday.halfMast - offset
+        else:
+            return self.flagDownTime - offset
 
     @property
     def unique_id(self):
@@ -88,36 +114,14 @@ class FlagDaysSensor(SensorEntity):
 
     @property
     def extra_state_attributes(self):
-        # Calculate the sunrise and sunset from the coordinates of the HA server
-        geo = Observer(
-            self.hass.config.latitude,
-            self.hass.config.longitude,
-            self.hass.config.elevation,
-        )
-        s = sun(
-            geo, date=self.nextFlagday.getDate(), tzinfo=tz.gettz("Europe/Copenhagen")
-        )
-
-        # Calculate the correct time for flag up
-        flagUpTime = (
-            datetime.strptime("08:00", "%H:%M")
-            if s["sunrise"].hour < 8
-            else s["sunrise"]
-        )
-
         attr = {
             ATTR_FLAGDAY_NAME: self.nextFlagday.name,
+            ATTR_DAYS: self.flagdays.days,
             ATTR_YEARS: self.nextFlagday.years,
             ATTR_FLAG: self.nextFlagday.flag,
-            ATTR_FLAG_UP: flagUpTime.strftime("%H:%M"),
-            ATTR_FLAG_DOWN: s["sunset"].strftime("%H:%M"),
-            ATTR_FLAG_UP_TRIGGER: (
-                flagUpTime - timedelta(minutes=self.hass.data[DOMAIN][CONF_OFFSET])
-            ).strftime("%H:%M"),
-            ATTR_FLAG_DOWN_TRIGGER: (
-                s["sunset"] - timedelta(minutes=self.hass.data[DOMAIN][CONF_OFFSET])
-            ).strftime("%H:%M"),
-            ATTR_HALF_MAST: self.nextFlagday.getHalfMast(),
+            ATTR_FLAG_UP: self.flagUpTime.strftime("%H:%M"),
+            ATTR_FLAG_DOWN: self.flagDownTime.strftime("%H:%M"),
+            ATTR_HALF_MAST: self.nextFlagday.halfMast,
             ATTR_CONCURRENT: self.flagdays.getConcurrentFlagdays(self.nextFlagday.date),
         }
         attr["future_flagdays"] = []
@@ -129,7 +133,7 @@ class FlagDaysSensor(SensorEntity):
                     ATTR_DATE_END: flagday.getDateEnd("%-d-%-m"),
                 }
             )
-        attr[ATTR_ATTRIBUTION] = CREDITS
+        attr.update({ATTR_DEVICE_CLASS: "timestamp", ATTR_ATTRIBUTION: CREDITS})
         return attr
 
     @property

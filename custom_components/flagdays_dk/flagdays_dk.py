@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import logging
-
+from .easter import easter
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from .easter import easter
+import logging
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 _LOGGER = logging.getLogger(__name__)
@@ -197,7 +196,9 @@ class flagday:
             self.halfMast = (
                 True
                 if self.name == STRINGS["GOOD_FRIDAY"]
-                else datetime.strptime("12:00", "%H:%M").time()
+                else datetime.combine(
+                    self.date, datetime.strptime("12:00", "%H:%M").time()
+                )
             )
 
         if name in STRINGS["ROYAL"]:
@@ -219,6 +220,4 @@ class flagday:
             return self.dateEnd.strftime(dateFormat)
 
     def getHalfMast(self, timeFormat="%H:%M"):
-        if type(self.halfMast) is bool:
-            return self.halfMast
-        return self.halfMast.strftime(timeFormat)
+        return self.halfMast
