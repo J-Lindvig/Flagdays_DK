@@ -62,6 +62,16 @@ flagdays_dk:
     # Manual entry with calculation of age (year stated in date)
     - name: Ada Lovelace Birthday
       date: 10-12-1815
+
+  # ADVANCED and optional
+  # When feeding other sensors or groups of sensor, look for these attribute names.
+  # First one found in the sensor attributes of datetime type is used.
+  # Default: "date"
+  attribute_names:
+    - date
+    - anniversary_date
+  
+
 ```
 ## State and attributes
 State is the number of days to the event.
