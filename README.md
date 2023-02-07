@@ -34,10 +34,12 @@ flagdays_dk:
   exclude:
     - Kongelig
     - Udsendte
+    - Religiøs
+    - ALL
 
   # List of private flagdays
   flagdays:
-    # Sensor with a datetime attribute named "date"
+    # Sensor with a datetime attribute named "date" or a attribute specified under "attribute_names"
     - sensor.birthday_hjaltes_fodselsdag
 
     # Group of sensors with a datetime attribute named "date"
