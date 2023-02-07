@@ -19,5 +19,6 @@ KEY_DATE_END = "date_end"
 KEY_FLAG = "flag"
 KEY_NAME = "name"
 KEY_PRIORITY = "priority"
+KEY_TYPE = "TYPE"
 
 UPDATE_INTERVAL = 60
