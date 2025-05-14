@@ -5,6 +5,7 @@ from collections import OrderedDict
 from datetime import datetime
 
 from homeassistant.const import ATTR_DATE, ATTR_FRIENDLY_NAME
+from homeassistant.helpers.discovery import async_load_platform
 
 from .const import (
     CONF_ATTRIBUTE_NAMES,
@@ -127,7 +128,7 @@ async def async_setup(hass, config):
 
     # Add sensors
     hass.async_create_task(
-        hass.helpers.discovery.async_load_platform(CONF_PLATFORM, DOMAIN, conf, config)
+        async_load_platform(hass, CONF_PLATFORM, DOMAIN, conf, config)
     )
 
     # Initialization was successful.
